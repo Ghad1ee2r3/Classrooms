@@ -23,4 +23,3 @@ class Student(models.Model):
 	gender= models.CharField( max_length=120, choices=[(MALE,"Male"),(FEMALE, "Female")],)
 	exam_grade=models.DecimalField(max_digits=10, decimal_places=3)
 	classroom=models.ForeignKey(Classroom, on_delete=models.CASCADE)
-	ordering=['name']

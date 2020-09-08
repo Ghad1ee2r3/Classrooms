@@ -107,43 +107,49 @@ def classroom_delete(request, classroom_id):
 
 
 def student_create(request, classroom_id):
-    classroom_obj = Classroom.objects.get(id=classroom_id)
-    #if not(request.user  ==  classroom_obj.owner or request.user.is_staff  ) :
-    #    return redirect('notallow')
+    classroom = Classroom.objects.get(id=classroom_id)
+    if not request.user == classroom.teacher:
+        messages.success(request,"sign in as teacher")
+        return redirect('signin')
     form = StudentForm()
-    #student = Student.objects.get(id=classroom_id)
     if request.method == "POST":
         form = StudentForm(request.POST)
         if form.is_valid():
             student = form.save(commit=False)
-            student.classroom = classroom_obj
+            student.classroom = classroom
             student.save()
             return redirect('classroom-detail', classroom_id)
     context = {
         "form":form,
-        "classroom_obj": classroom_obj,
+        "classroom": classroom,
     }
     return render(request, 'student_create.html', context)
 
 def student_update(request, classroom_id , student_id):
-    classroom_obj = Classroom.objects.get(id=classroom_id)
-	student = Student.objects.get(classroom= classroom_obj,id=student_id)
-	form = StudentForm(instance=student)
-	if request.method == "POST":
-		form = StudentForm(request.POST,   instance=student)
-		if form.is_valid():
-			form.save()
-			messages.success(request, "Successfully Edited!")
-			return redirect('classroom-detail')
-		print (form.errors)
-	context = {
+    classroom = Classroom.objects.get(id=classroom_id)
+    if not request.user == classroom.teacher:
+        messages.success(request,"sign in as teacher")
+        return redirect('signin')
+    student = Student.objects.get(id=student_id)
+    form = StudentForm(instance=student)
+    if request.method == "POST":
+        form = StudentForm(request.POST,instance=student)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Successfully Edited!")
+            return redirect('classroom-detail',classroom_id)
+    context = {
 	"form": form,
 	"student": student,
-    "classroom":classroom_obj
+    "classroom":classroom
 	}
-	return render(request, 'update_student.html', context)
+    return render(request, 'update_student.html', context)
 
-def student_delete():
-    Classroom.objects.get(id=classroom_id).delete()
-	messages.success(request, "Successfully Deleted!")
-	return redirect('classroom-detail')
+def student_delete(request, classroom_id , student_id):
+    classroom=Classroom.objects.get(id=classroom_id)
+    if not request.user == classroom.teacher:
+        messages.success(request,"sign in as teacher")
+        return redirect('signin')
+    Student.objects.get(id=student_id).delete()
+    messages.success(request, "Successfully Deleted!")
+    return redirect('classroom-detail',classroom_id)

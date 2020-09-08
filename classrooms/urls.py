@@ -16,9 +16,9 @@ urlpatterns = [
     path('signup/',views.signup ,name='signup'),
     path('signin/',views.signin ,name='signin'),
     path('signout/',views.signout ,name='signout'),
-    path('classrooms/<int:classroom_id>/student/add/',views.student_create ,name='student-create'),
-    path('classrooms/<int:classroom_id>/student/update/',views.student_update ,name='student-update'),
-    path('classrooms/<int:classroom_id>/student/delete/',views.student_delete ,name='student-delete'),
+    path('classrooms/<int:classroom_id>/student/create/',views.student_create ,name='student-create'),
+    path('classrooms/<int:classroom_id>/student/update/<int:student_id>',views.student_update ,name='student-update'),
+    path('classrooms/<int:classroom_id>/student/delete/<int:student_id>',views.student_delete ,name='student-delete'),
 ]
 
 if settings.DEBUG:
