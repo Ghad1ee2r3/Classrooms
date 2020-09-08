@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
-from .models import Classroom
-from .forms import ClassroomForm, SignupForm, SigninForm
+from .models import Classroom ,Student
+from .forms import ClassroomForm, SignupForm, SigninForm ,StudentForm
+from django.db.models.functions import Coalesce
 
 def signup(request):
     form = SignupForm()
@@ -52,26 +53,34 @@ def classroom_list(request):
 
 
 def classroom_detail(request, classroom_id):
-	classroom = Classroom.objects.get(id=classroom_id)
-	context = {
+    classroom = Classroom.objects.get(id=classroom_id)
+    #classroom.order_by('name')
+    #students=Student.objects.filter(classroom=classroom)#.extra(select={"name":"LOWER(NAME)"},order_by="name")
+    students=Student.objects.filter(classroom=classroom).order_by('name','-exam_grade')
+    context = {
 		"classroom": classroom,
+        "students": students
 	}
-	return render(request, 'classroom_detail.html', context)
+    return render(request, 'classroom_detail.html', context)
 
 
 def classroom_create(request):
-	form = ClassroomForm()
-	if request.method == "POST":
-		form = ClassroomForm(request.POST, request.FILES or None)
-		if form.is_valid():
-			form.save()
-			messages.success(request, "Successfully Created!")
-			return redirect('classroom-list')
-		print (form.errors)
-	context = {
-	"form": form,
-	}
-	return render(request, 'create_classroom.html', context)
+    if request.user.is_anonymous:
+        return redirect('signin')
+	#if request.user.is_anonymous:
+        #return redirect('signin')
+    form = ClassroomForm()
+    if request.method == "POST":
+        form = ClassroomForm(request.POST)
+        if form.is_valid():
+            classroom_obj = form.save(commit=False)
+            classroom_obj.teacher = request.user
+            classroom_obj.save()
+            return redirect('classroom-list')
+    context = {
+        "form":form,
+    }
+    return render(request, 'create_classroom.html', context)
 
 
 def classroom_update(request, classroom_id):
@@ -95,3 +104,46 @@ def classroom_delete(request, classroom_id):
 	Classroom.objects.get(id=classroom_id).delete()
 	messages.success(request, "Successfully Deleted!")
 	return redirect('classroom-list')
+
+
+def student_create(request, classroom_id):
+    classroom_obj = Classroom.objects.get(id=classroom_id)
+    #if not(request.user  ==  classroom_obj.owner or request.user.is_staff  ) :
+    #    return redirect('notallow')
+    form = StudentForm()
+    #student = Student.objects.get(id=classroom_id)
+    if request.method == "POST":
+        form = StudentForm(request.POST)
+        if form.is_valid():
+            student = form.save(commit=False)
+            student.classroom = classroom_obj
+            student.save()
+            return redirect('classroom-detail', classroom_id)
+    context = {
+        "form":form,
+        "classroom_obj": classroom_obj,
+    }
+    return render(request, 'student_create.html', context)
+
+def student_update(request, classroom_id , student_id):
+    classroom_obj = Classroom.objects.get(id=classroom_id)
+	student = Student.objects.get(classroom= classroom_obj,id=student_id)
+	form = StudentForm(instance=student)
+	if request.method == "POST":
+		form = StudentForm(request.POST,   instance=student)
+		if form.is_valid():
+			form.save()
+			messages.success(request, "Successfully Edited!")
+			return redirect('classroom-detail')
+		print (form.errors)
+	context = {
+	"form": form,
+	"student": student,
+    "classroom":classroom_obj
+	}
+	return render(request, 'update_student.html', context)
+
+def student_delete():
+    Classroom.objects.get(id=classroom_id).delete()
+	messages.success(request, "Successfully Deleted!")
+	return redirect('classroom-detail')
