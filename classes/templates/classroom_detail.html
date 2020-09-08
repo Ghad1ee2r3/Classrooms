@@ -8,24 +8,34 @@
   <div class="card-body">
     <h5 class="card-title" style="color: 000034;">{{classroom.name}} {{classroom.subject}}</h5>
     <p class="card-text" style="color: 000034;">{{classroom.year}}</p>
-    {% for student in students %}
-    <div>
-      <p>{{student.name}}</p>
-      <p>{{student.dob}}</p>
-      <p>{{student.exam_grade}}</p>
-    </div>
-    {% endfor %}
+    {%  if request.user  ==  classroom.teacher %}
     <a href="{% url 'classroom-update' classroom.id %}" class="btn" style="background-color: #000034; color: white;">Update</a>
     <a href="{% url 'classroom-delete' classroom.id %}" class="btn" style="background-color: #FFA500; color: #000034;">Delete</a>
-    <a href="{% url 'student-create' classroom.id %}" class="btn" style="background-color: #FFA500; color: #000034;">ADD</a>
-   {%  if request.user  ==  classroom.teacher %}
-   <div class="col-md-4">
-                <a href="{% url 'restaurant-update' restaurant.id %}" class="btn btn-outline-primary btn-block">Update student</a>
-            </div>
-        <div class="col-md-4">
-            <a href="{% url 'item-create' restaurant.id %}" class="btn btn-outline-success btn-block">delete student</a>
-        </div>
-          {% endif %}
+    <a href="{% url 'student-create' classroom.id %}" class="btn" style="background-color: #FFA500; color: #000034;">Add Student</a>
+    {% endif %}
+
+    <table style="width:100%">
+      <tr>
+        <th>name</th>
+        <th>Grades</th>
+        <th>DoB</th>
+        <th>Gender</th>
+      </tr>
+    {% for student in students %}
+    <tr>
+    <td>{{student.name}}</td>
+    <td>{{student.exam_grade}}</td>
+    <td>{{student.dob}}</td>
+    <td>{{student.gender}}</td>
+    {%  if request.user  ==  classroom.teacher %}
+    <td><a href="{% url 'student-update' classroom.id student.id %}" class="btn" style="background-color: #000034; color: white;">Update</a>
+    <a href="{% url 'student-delete' classroom.id student.id %}" class="btn" style="background-color: #FFA500; color: #000034;">Delete</a></td>
+    {% endif %}
+  </tr>
+
+    {% endfor %}
+
+    </table>
   </div>
 </div>
 
