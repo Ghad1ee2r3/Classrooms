@@ -18,8 +18,8 @@ class Student(models.Model):
 	dob=models.DateField(default=timezone.now)
 	#DateField(auto_now= False , auto_now_add= True)
 	#GENDER_CHOICES=["Male", "Female"]
-	MALE="Male"
-	FEMALE="Female"
+	MALE="M"
+	FEMALE="F"
 	gender= models.CharField( max_length=120, choices=[(MALE,"Male"),(FEMALE, "Female")],)
 	exam_grade=models.DecimalField(max_digits=10, decimal_places=3)
 	classroom=models.ForeignKey(Classroom, on_delete=models.CASCADE)
